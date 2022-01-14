@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
+const crypto = require('crypto');
+const validateEmail = require('./validateEmail');
+const validatePassword = require('./validatePassword');
 
 const app = express();
 app.use(bodyParser.json());
@@ -32,6 +35,13 @@ app.get('/talker/:id', async (req, res) => {
   if (!talker) return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 
   res.status(200).json(talker);
+});
+
+app.post('/login', validateEmail, validatePassword, (_req, res) => {
+  // geração do token retirado de https://qastack.com.br/programming/8855687/secure-random-token-in-node-js
+  const token = crypto.randomBytes(10).toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
+  
+  res.status(200).json({ token });
 });
 
 app.listen(PORT, () => {
