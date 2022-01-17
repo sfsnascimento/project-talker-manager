@@ -63,7 +63,7 @@ app.post('/talker', dateVerification, rateVerification, authorizationToken, name
 
   talkers.push({ name, age, id, talk });
 
-  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+  await fs.writeFile(talkerJson, JSON.stringify(talkers));
   res.status(201).json({ name, age, id, talk });
 });
 
@@ -78,8 +78,22 @@ ageVerification, dateVerification, rateVerification, talkKeysVerification, async
   const findIndex = talkers.findIndex((talker) => talker.id === parseInt(id, 10));
   talkers[findIndex] = { ...talkers[findIndex], name, age, talk };
 
-  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+  await fs.writeFile(talkerJson, JSON.stringify(talkers));
   res.status(200).json({ name, age, id: parseInt(id, 10), talk });
+});
+
+app.delete('/talker/:id', authorizationToken, async (req, res) => {
+  const { id } = req.params;
+
+  const talkers = await fs.readFile(talkerJson, 'utf-8')
+    .then((response) => JSON.parse(response));
+
+  const findIndex = talkers.findIndex((talker) => talker.id === parseInt(id, 10));
+
+  talkers.splice(findIndex, 1);
+  await fs.writeFile(talkerJson, JSON.stringify(talkers));
+
+  res.status(204).end();
 });
 
 app.listen(PORT, () => {
