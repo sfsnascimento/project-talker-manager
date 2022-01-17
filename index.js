@@ -2,8 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const crypto = require('crypto');
-const validateEmail = require('./validateEmail');
-const validatePassword = require('./validatePassword');
+const validateEmail = require('./verifications/validateEmail');
+const validatePassword = require('./verifications/validatePassword');
+const authorizationToken = require('./verifications/authorizationToken');
+const nameVerification = require('./verifications/nameVerification');
+const ageVerification = require('./verifications/ageVerification');
+const dateVerification = require('./verifications/dateVerification');
+const talkKeysVerification = require('./verifications/talkKeysVerification');
+const rateVerification = require('./verifications/rateVerification');
 
 const app = express();
 app.use(bodyParser.json());
@@ -42,6 +48,20 @@ app.post('/login', validateEmail, validatePassword, (_req, res) => {
   const token = crypto.randomBytes(10).toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
   
   res.status(200).json({ token });
+});
+
+app.post('/talker', authorizationToken, nameVerification,
+  ageVerification, dateVerification, rateVerification, talkKeysVerification, async (req, res) => {
+  const { name, age, talk } = req.body;
+
+  const talkers = await fs.readFile('./trybe.json', 'utf-8')
+    .then((response) => JSON.parse(response));
+  
+  talkers.push({ name, age, talk });
+  console.log(talkers);
+  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+
+  res.status(201).json({ name, age, talk });
 });
 
 app.listen(PORT, () => {
