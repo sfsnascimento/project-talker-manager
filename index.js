@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const crypto = require('crypto');
+
+const talkerJson = './talker.json';
 const validateEmail = require('./verifications/validateEmail');
 const validatePassword = require('./verifications/validatePassword');
 const authorizationToken = require('./verifications/authorizationToken');
@@ -33,7 +35,7 @@ app.get('/talker', async (_req, res) => {
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const talkers = await fs.readFile('./talker.json', 'utf-8')
+  const talkers = await fs.readFile(talkerJson, 'utf-8')
     .then((response) => JSON.parse(response));
   
   const talker = talkers.find((t) => t.id === parseInt(id, 10));
@@ -50,18 +52,34 @@ app.post('/login', validateEmail, validatePassword, (_req, res) => {
   res.status(200).json({ token });
 });
 
-app.post('/talker', authorizationToken, nameVerification,
-  ageVerification, dateVerification, rateVerification, talkKeysVerification, async (req, res) => {
+app.post('/talker', dateVerification, rateVerification, authorizationToken, nameVerification,
+  ageVerification, talkKeysVerification, async (req, res) => {
   const { name, age, talk } = req.body;
-
-  const talkers = await fs.readFile('./trybe.json', 'utf-8')
+  const talkers = await fs.readFile(talkerJson, 'utf-8')
     .then((response) => JSON.parse(response));
   
-  talkers.push({ name, age, talk });
-  console.log(talkers);
-  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+  const findLastId = talkers[talkers.length - 1].id;
+  const id = findLastId + 1;
 
-  res.status(201).json({ name, age, talk });
+  talkers.push({ name, age, id, talk });
+
+  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+  res.status(201).json({ name, age, id, talk });
+});
+
+app.put('/talker/:id', authorizationToken, nameVerification,
+ageVerification, dateVerification, rateVerification, talkKeysVerification, async (req, res) => {
+  const { id } = req.params;
+  console.log(req.params);
+  const { name, age, talk } = req.body;
+  const talkers = await fs.readFile(talkerJson, 'utf-8')
+    .then((response) => JSON.parse(response));
+
+  const findIndex = talkers.findIndex((talker) => talker.id === parseInt(id, 10));
+  talkers[findIndex] = { ...talkers[findIndex], name, age, talk };
+
+  await fs.writeFile('./talker.json', JSON.stringify(talkers));
+  res.status(200).json({ name, age, id: parseInt(id, 10), talk });
 });
 
 app.listen(PORT, () => {
