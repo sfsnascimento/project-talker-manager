@@ -65,8 +65,9 @@ app.post('/login', validateEmail, validatePassword, (_req, res) => {
   res.status(200).json({ token });
 });
 
-app.post('/talker', dateVerification, rateVerification, authorizationToken, nameVerification,
-  ageVerification, talkKeysVerification, async (req, res) => {
+app.post('/talker', authorizationToken, talkKeysVerification, 
+  dateVerification, rateVerification, nameVerification,
+  ageVerification, async (req, res) => {
   const { name, age, talk } = req.body;
   const talkers = await fs.readFile(talkerJson, 'utf-8')
     .then((response) => JSON.parse(response));
