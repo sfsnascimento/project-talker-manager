@@ -81,8 +81,9 @@ app.post('/talker', authorizationToken, talkKeysVerification,
   res.status(201).json({ name, age, id, talk });
 });
 
-app.put('/talker/:id', authorizationToken, nameVerification,
-ageVerification, dateVerification, rateVerification, talkKeysVerification, async (req, res) => {
+app.put('/talker/:id', authorizationToken, talkKeysVerification, 
+dateVerification, rateVerification, nameVerification,
+ageVerification, async (req, res) => {
   const { id } = req.params;
   console.log(req.params);
   const { name, age, talk } = req.body;
