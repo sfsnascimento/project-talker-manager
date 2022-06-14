@@ -13,3 +13,7 @@ Uma API de um CRUD de palestrantes contendo endpoints que irão ler e escrever e
 2. Instale as dependências
 
 - `npm install`
+
+3. Rode o projeto
+
+- `npm start`
